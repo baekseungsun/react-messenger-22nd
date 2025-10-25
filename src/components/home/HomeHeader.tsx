@@ -7,7 +7,6 @@ export default function ChatHeader() {
     return (
         <div className="flex-col w-[375px] h-[160px] mx-auto items-center justify-center-safe">
             <div className="flex h-[56.3px] items-center justify-center-safe">
-                아이폰 배너
             </div>
             <div className="flex h-[39.7px] items-center justify-center-safe">
                 <div className="flex w-[343px] h-[25px] self-start  ml-[16px] mx-auto">

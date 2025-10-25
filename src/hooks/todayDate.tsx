@@ -11,3 +11,4 @@ export function useTodayMD(compact = false, tz = 'Asia/Seoul') {
     }, [compact, tz]);
     return text;
 }
+

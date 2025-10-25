@@ -20,7 +20,6 @@ const ChatHeader = ({ name, numPeople, onSearch, onMenu }: Props) => {
     return (
         <div className="flex-col w-[375px] h-[96px] mx-auto items-center justify-center-safe bg-white">
             <div className="h-[53px] flex items-center justify-center-safe">
-
             </div>
             <div className="flex w-[343px] h-[26px] mx-auto items-center bg-white ">
                 <div>

@@ -1,5 +1,6 @@
 import React from "react";
 import MagnifierBtn from "@/assets/chatroom/magnifier.svg";
+import profile from "@/assets/chatroom/profile.svg"
 
 export type ChatTextProps = {
     text: string;
@@ -40,7 +41,7 @@ export default function ChatText({text, sentAt, isMe, readBy, totalPeople, sende
                     {/*프로필 사진*/}
                     {profileSrc && (
                         <img
-                            src={profileSrc}
+                            src={profile}
                             alt={senderName ?? "상대 프로필"}
                             className="w-8 h-8 rounded-full object-cover shrink-0"
                         />

@@ -5,5 +5,7 @@
     "moduleResolution": "bundler",
     "types": ["node"]
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.mjs"
+  ]
 }
