@@ -1,64 +1,41 @@
-//MEssage type 정의
- type myMsg = {
-    id: string;
-    text: string;
-    isMe: boolean;
-    sentAt: number;
-    readBy: number;
-    date: string;
+//Message type 정의
 
-};
-
-//상대가 보낸 (데모) 메세지 타입
- type receivedMsg = {
+ export type Msg = {
     id: string;
+    senderName?: string;
+    senderId: string;
     text: string;
-    isMe: false;
-    sentAt: number;
-    readBy: number;
-    date: string;
-    senderName: string;
-    profileSrc: string; // 프사 경로/URL
+    sentAt: string;
+    unreadBy: number;
+    iRead: boolean;
+
 }
-
-export type Message = myMsg | receivedMsg;
 
 //각 메세지 ID 함수
 export function getId() {
-    return (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+    return (typeof crypto !== "undefined" && "randomUUID" in crypto)
         ? crypto.randomUUID()
         : `${Date.now()}_${Math.random()}`;
 }
 
-//프로필 사진 src
-export function getPf(sender: string): string {
-    const base = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
-    return `${base}/profile/${sender}.svg`;
-}
+const time = new Date().toLocaleTimeString("ko-KR", {
+    hour: "numeric",
+    minute: "2-digit",
+});
 //메세지 빌드 함수
-    export function generateMessage(sentBy: 'me' | 'demo', text: string, date: string, opts?: {
-        isMe: boolean; readBy?: number; senderName?: string; profileSrc?: string}): Message {
-    const isMe = opts?.isMe ?? true;
-    const readBy = opts?.readBy ?? (isMe ? 1 : 0);
-    if (sentBy === 'me') {
-        return {
-            id: getId(),
-            text,
-            isMe: true,
-            sentAt: Date.now(),
-            readBy,
-            date,
-        };
-    }
+export function generateMessage(params: {
+    senderName: string; // e.g. "나"
+    senderId: string;   // e.g. "000"
+    text: string;
+    sentAt: string;
+}): Msg {
     return {
         id: getId(),
-        text,
-        isMe: false,
-        sentAt: Date.now(),
-        readBy: opts?.readBy ?? 0,
-        date,
-        //확장 필요
-        senderName: opts?.senderName ?? '상대방',
-        profileSrc: opts?.profileSrc ?? getPf(opts?.profileSrc ?? ''),
+        senderName: params.senderName,
+        senderId: params.senderId,
+        text: params.text,
+        sentAt: time,
+        unreadBy: 0,
+        iRead: true,
     };
 }

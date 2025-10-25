@@ -3,9 +3,7 @@ import MagnifierBtn from "@/assets/chatroom/magnifier.svg";
 
 export type ChatTextProps = {
     text: string;
-    //보낸시각
-    sentAt: number | Date;
-    //보낸이가 본인인지
+    sentAt: string;
     isMe: boolean;
     readBy: number;
     totalPeople: number;
@@ -13,11 +11,10 @@ export type ChatTextProps = {
     profileSrc?: string;
 };
 //시간 계산
-function fmtTime(t: number | Date) {
-    const d = typeof t === "number" ? new Date(t) : t;
-    return d.toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
+export function fmtTime(t: string) {
+    // If t is already a human-readable string just return it.
+    return t.trim() !== "" ? t : "";
 }
-
 
 export default function ChatText({text, sentAt, isMe, readBy, totalPeople, senderName, profileSrc}: ChatTextProps) {
     const unread = totalPeople - readBy;
@@ -39,7 +36,6 @@ export default function ChatText({text, sentAt, isMe, readBy, totalPeople, sende
                     </div>
                 </div>
             ) : (
-                /*상대메세지*/
                 <div className="flex items-start gap-2 max-w-[100%] min-w-0">
                     {/*프로필 사진*/}
                     {profileSrc && (

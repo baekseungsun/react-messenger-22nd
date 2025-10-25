@@ -1,57 +1,78 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { useTodayMD } from '@/hooks/todayDate';
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatInput from "@/components/chat/ChatInput";
 import ChatText from "@/components/chat/ChatText";
 import {generateMessage} from "@/hooks/generateMsg";
-import {persist} from "@/hooks/store";
-import {Message} from "@/hooks/generateMsg";
-import {getPf} from "@/hooks/generateMsg";
+import {Msg} from "@/hooks/generateMsg";
+import chatsData from "@/data/msg.json";
+import {fmtTime} from "@/components/chat/ChatText";
+import {formatTodayMD} from "@/utils/dateCalculation";
 
+const getStorageKey = (chatId: string) => `chat:${chatId}:messages`;
 
 export default function ChatPage() {
-    const [name] = useState("그룹 메세지");
-    const [numPeople] = useState(3);
+
     const [value, setValue] = useState("");
     const todayMD = useTodayMD(); //날짜
+    const [messages, setMessages] = useState<Msg[]>([]);
+    const { id } = useParams<{ id: string }>();
+    const chat = chatsData.find(c => c.id === id) || chatsData[0];
 
-    //msg 배열
-    const [messages, setMessages] = useState<Message[]>([
-        // 데모용 초기 메시지 (Figma에 있는대로 구현)
-        {
-            id: "demo1",
-            text: "안녕하세요 혹시 오늘 이미지 전달주시나요?",
-            isMe: false,
-            sentAt: Date.now() - 1000 * 60 * 2,
-            readBy: 3, //역시 Figma에 있는대로 구현
-            date: todayMD,
-            senderName: "장희연",
-            profileSrc: getPf("장희연")
+    useEffect(() => {
+        const stored = sessionStorage.getItem(getStorageKey(chat.id));
+
+        if (stored) {
+            // already have combined messages (demo + user-sent)
+            setMessages(JSON.parse(stored));
+        } else {
+            // first time opening this chat: use demo messages from JSON
+            setMessages(chat.messages as Msg[]);
+            sessionStorage.setItem(
+                getStorageKey(chat.id),
+                JSON.stringify(chat.messages)
+            );
         }
-    ]);
-
+    }, [chat.id, chat.messages]);
 
     const handleSend = (text: string) => {
-        //메세지 반환
-        const sentBy = "me"
-        const nextMsg = generateMessage(sentBy, text, todayMD, {isMe: true, readBy: 1});
-        //새 메세지 배열에 추가
-        setMessages(prev => [
-            ...prev,
-            nextMsg //기본으로 1명 읽음으로 세팅
-        ]);
-        persist(nextMsg);
-        //console.log(sessionStorage.getItem(`msg:${nextMsg.id}`));
-        setValue("");
-    };
+        if (!text.trim()) return;
 
+        // build a new message using the new shape
+        const newMsg: Msg = generateMessage({
+            senderName: "나",     // or whatever your display name is
+            senderId: "000",      // you = "000" in your model
+            text,
+            sentAt: "어제",       // you can pretty-format current time here
+        });
+
+
+        const nextMessages = [...messages, newMsg];
+        setMessages(nextMessages);
+
+        // save to sessionStorage so it persists
+        sessionStorage.setItem(
+            getStorageKey(chat.id),
+            JSON.stringify(nextMessages)
+        )
+
+        sessionStorage.setItem(
+            `chat:${chat.id}:preview`,
+            newMsg.text
+        );
+
+        // clear input
+        setValue("");
+
+    };
     return (
         <div className="min-h-screen bg-slate-200 flex items-start justify-center p-6">
-            <div className="w-[375px] h-[812px] bg-[#ECEEF4] rounded-3xl shadow flex flex-col">
-                {/* 헤더 */}
+            <div className="w-[375px] h-[812px] bg-[#ECEEF4] shadow flex flex-col">
+                {/* Header */}
                 <ChatHeader
-                    name={name}
-                    numPeople={numPeople}
+                    name={chat.name}
+                    numPeople={chat.memberIds.length}
                     onSearch={() => {}}
                     onMenu={() => {}}
                 />
@@ -63,24 +84,23 @@ export default function ChatPage() {
                     </div>
                 </div>
 
-                {/* 보낸 메세지 위에서부터 나열 */}
-                <div className="flex-1 overflow-auto no-scrollbar px-3 py-4 space-y-3 ">
+                {/* 메시지 리스트 */}
+                <div className="flex-1 overflow-auto no-scrollbar px-3 py-4 space-y-3">
                     {messages.map((m) => (
                         <ChatText
                             key={m.id}
                             text={m.text}
-                            sentAt={m.sentAt}
-                            isMe={m.isMe}
-                            readBy={m.readBy}
-                            totalPeople={numPeople}
-                            //!isMe일 때 이름 표기
-                            senderName={'senderName' in m ? m.senderName : undefined}
-                            profileSrc={'profileSrc' in m? m.profileSrc : undefined}
+                            sentAt={fmtTime(m.sentAt)}
+                            isMe={m.senderId === "000"} // infer "me" based on senderId
+                            readBy={m.iRead ? 1 : 0}    // fake read count
+                            totalPeople={chat.memberIds.length}
+                            senderName={m.senderName}   // can be undefined
+                            profileSrc={`/avatars/${m.senderId}.svg`} // avatar per senderId
                         />
                     ))}
                 </div>
 
-
+                {/* 입력창 */}
                 <ChatInput
                     value={value}
                     onChange={setValue}

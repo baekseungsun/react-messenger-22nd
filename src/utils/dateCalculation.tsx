@@ -13,6 +13,7 @@ export function formatTodayMD(compact = false, tz = 'Asia/Seoul') {
         weekday: 'long', 
     }).format(d);
 
+
     const mdText = compact ? md.replace(/\s+/g, '') : md;
     return compact ? `${mdText}(${wd})` : `${mdText} ${wd}`;
 }
